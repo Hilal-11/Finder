@@ -1,56 +1,231 @@
-# Welcome to your Expo app 👋
+# Worker Marketplace App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile marketplace connecting the public with local workers and professionals — carpenters, architects, photographers, videographers, wedding decorators, bulk labor teams, and more. Visitors can browse categories, search by location, and contact workers directly via in-app chat, voice call, email, phone, or WhatsApp.
 
-## Get started
+---
 
-1. Install dependencies
+## Table of Contents
+
+- [Worker Marketplace App](#worker-marketplace-app)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Features](#features)
+    - [MVP (Phase 1)](#mvp-phase-1)
+    - [Phase 2](#phase-2)
+    - [Phase 3](#phase-3)
+  - [Tech Stack](#tech-stack)
+  - [Project Structure](#project-structure)
+  - [Prerequisites](#prerequisites)
+  - [Getting Started](#getting-started)
+  - [Environment Variables](#environment-variables)
+  - [Database Setup](#database-setup)
+  - [Available Scripts](#available-scripts)
+  - [Roadmap](#roadmap)
+  - [Contributing](#contributing)
+  - [License](#license)
+
+---
+
+## Overview
+
+**User roles:**
+
+- **Visitor / Customer** — browses workers, searches by category/location, contacts and reviews workers
+- **Worker / Provider** — individual professional or team lead (bulk labor crews of 5/8/10), manages profile and portfolio
+- **Admin** — approves worker listings, manages categories, moderates reports
+
+**Core idea:** unlike platforms that hide contact details to force bookings through the app, this app surfaces direct contact info (call, WhatsApp, email, chat) on every worker profile — prioritizing speed and trust over platform-mediated transactions.
+
+---
+
+## Features
+
+### MVP (Phase 1)
+
+- Phone/email signup with OTP, separate flows for Visitor and Worker
+- Worker profile: category/subcategory, service area, bio, pricing, portfolio images, availability toggle
+- Admin-configurable categories and subcategories
+- Search with filters: category, location, price range, rating
+- Location-based discovery (map + "near me")
+- Direct contact block: Call, WhatsApp deep link, Email, In-app chat
+- Ratings and reviews
+- Admin panel for approvals and category management
+
+### Phase 2
+
+- Team/bulk worker profiles (team size, per-person/per-day rate)
+- In-app voice/video calling with masked numbers
+- Booking system with availability calendar
+- Quote requests (reverse marketplace — customer posts requirement, workers respond)
+- ID verification / verified badge
+- Favorites, push notifications, multi-language UI
+- Worker subscription tiers
+
+### Phase 3
+
+- In-app payments with escrow-style holds
+- Dispute resolution and refunds
+- Worker analytics dashboard
+- SEO-optimized public profile pages
+- Featured/sponsored listings
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Mobile app | React Native + Expo |
+| Web (public profiles + admin) | Next.js |
+| Backend | Node.js + Express |
+| Database | PostgreSQL via Supabase |
+| Auth | Supabase Auth (phone OTP + email) |
+| Realtime chat | Supabase Realtime |
+| File storage | Supabase Storage |
+| Maps/location | Google Maps Platform / Mapbox |
+| Push notifications | Expo Push Notifications |
+| Voice calling (Phase 2) | Twilio Voice / Exotel |
+| WhatsApp | wa.me deep links (MVP), WhatsApp Business API (later) |
+| Payments | Razorpay |
+| Search | Postgres full-text search (MVP), Meilisearch/Algolia (scale) |
+| Hosting | Vercel (web/admin), Railway/Render (API), Supabase (DB/Auth/Storage) |
+
+---
+
+## Project Structure
+
+```
+worker-marketplace/
+├── app/                    # Expo Router screens (file-based routing)
+│   ├── (auth)/             # Login, signup, OTP verification
+│   ├── (visitor)/          # Visitor-facing screens
+│   │   ├── index.tsx       # Home / category browse
+│   │   ├── search.tsx
+│   │   └── worker/[id].tsx # Worker profile detail
+│   ├── (worker)/           # Worker-facing screens
+│   │   ├── profile-setup.tsx
+│   │   ├── portfolio.tsx
+│   │   └── dashboard.tsx
+│   └── (admin)/            # Admin panel screens
+├── components/             # Reusable UI components
+├── lib/
+│   └── supabase.ts         # Supabase client init
+├── hooks/                  # Custom React hooks
+├── constants/               # Categories, colors, config values
+├── types/                  # TypeScript types/interfaces
+├── assets/                 # Images, icons, fonts
+├── .env                    # Environment variables (not committed)
+├── app.json                # Expo config
+├── package.json
+└── README.md
+```
+
+---
+
+## Prerequisites
+
+- Node.js v20+ and npm (or yarn/pnpm)
+- Expo Go app installed on your phone (Play Store / App Store) for live testing
+- A free [Supabase](https://supabase.com) account/project
+- A Razorpay account (for payment integration, Phase 2+)
+- Git
+
+---
+
+## Getting Started
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <your-repo-url>
+   cd worker-marketplace
+   ```
+
+2. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Install core Expo packages** (if setting up fresh)
+
+   ```bash
+   npx expo install expo-router react-native-safe-area-context react-native-screens
+   npx expo install @supabase/supabase-js react-native-url-polyfill
+   npx expo install expo-image-picker expo-image expo-location react-native-maps
+   ```
+
+4. **Set up environment variables** — see [Environment Variables](#environment-variables) below
+
+5. **Run the development server**
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Scan the QR code with Expo Go on your phone to load the app.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Environment Variables
 
-## Get a fresh project
+Create a `.env` file in the project root:
 
-When you're ready, run:
-
-```bash
-npm run reset-project
+```env
+EXPO_PUBLIC_SUPABASE_URL=your-supabase-project-url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-key
+EXPO_PUBLIC_RAZORPAY_KEY_ID=your-razorpay-key-id
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+> Never commit `.env` to version control. Add it to `.gitignore`.
 
-### Other setup steps
+---
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Database Setup
 
-## Learn more
+1. Create a project at [supabase.com](https://supabase.com)
+2. Open the SQL editor and create the core tables:
+   - `users`
+   - `worker_profiles`
+   - `categories`
+   - `portfolio_items`
+   - `reviews`
+   - `bookings`
+   - `conversations`
+   - `messages`
+   - `contact_clicks` (for analytics)
+3. Enable **Row Level Security (RLS)** on every table before writing app logic against them
+4. Copy your Project URL and anon key into `.env`
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Available Scripts
 
-## Join the community
+```bash
+npx expo start          # Start the development server
+npx expo start --clear  # Start with cache cleared
+npx expo run:android    # Build and run on Android
+npx expo run:ios        # Build and run on iOS (macOS only)
+eas build                # Production build via EAS (once configured)
+```
 
-Join our community of developers creating universal apps.
+---
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Roadmap
+
+- [ ] Phase 1 — Auth, profiles, categories, search, direct contact, reviews, admin approval
+- [ ] Phase 2 — Team profiles, masked calling, bookings, quote requests, verification, subscriptions
+- [ ] Phase 3 — In-app payments, disputes, analytics dashboard, SEO profile pages, featured listings
+
+---
+
+## Contributing
+
+This is currently a solo/early-stage project. Contribution guidelines will be added once the MVP is stable.
+
+---
+
+## License
+
+Not yet decided.
