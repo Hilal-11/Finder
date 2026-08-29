@@ -9,30 +9,13 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../lib/supabase';
 
 // Shape of a row from your `categories` table — matches the schema from earlier.
-type Category = { id: string; name: string; icon: string };
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  useEffect(() => {
-    // Fetch categories once when the screen mounts.
-    async function loadCategories() {
-      const { data, error } = await supabase.from('categories').select('id, name, icon');
-      if (error) {
-        console.error('Failed to load categories:', error.message);
-        return;
-      }
-      setCategories(data ?? []);
-    }
-    loadCategories();
-  }, []);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -59,20 +42,6 @@ export default function HomeScreen() {
 
         {/* Categories grid */}
         <Text className="text-lg font-bold text-gray-900 mb-3">Categories</Text>
-        <View className="flex-row flex-wrap justify-between mb-6">
-          {categories.map((cat) => (
-            <Pressable
-              key={cat.id}
-              onPress={() => router.push({ pathname: '/(tabs)/explore', params: { categoryId: cat.id } })}
-              className="w-[30%] items-center bg-gray-50 rounded-2xl py-4 mb-3"
-            >
-              <View className="w-12 h-12 rounded-full bg-blue-100 items-center justify-center mb-2">
-                <Ionicons name={(cat.icon as any) || 'briefcase-outline'} size={22} color="#2563EB" />
-              </View>
-              <Text className="text-xs font-semibold text-gray-700 text-center">{cat.name}</Text>
-            </Pressable>
-          ))}
-        </View>
 
         {/* Featured workers placeholder — you'll replace this with a real
             query + FlatList once worker_profiles has data */}

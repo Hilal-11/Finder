@@ -9,7 +9,8 @@
 import type { Session } from '@supabase/supabase-js';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
-import "../../global.css"
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import "../../global.css";
 import { supabase } from '../lib/supabase';
 
 export default function RootLayout() {
@@ -51,6 +52,15 @@ export default function RootLayout() {
 
   if (loading) return null; // could show a splash/loading screen here instead
 
-  // <Slot /> renders whichever child screen the router has decided to show
-  return <Slot />;
+  // SafeAreaProvider goes ONCE at the very top of the app. It reads the
+  // device's actual notch/status-bar/home-indicator measurements and makes
+  // them available everywhere below it. Without this wrapper, every
+  // SafeAreaView and useSafeAreaInsets() call in the app silently returns
+  // zero — which is why content was rendering under the status bar.
+  return (
+    <SafeAreaProvider>
+      {/* <Slot /> renders whichever child screen the router has decided to show */}
+      <Slot />
+    </SafeAreaProvider>
+  );
 }

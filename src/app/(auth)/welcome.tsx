@@ -1,27 +1,21 @@
 // app/(auth)/welcome.tsx
 //
-// Design notes:
-// 1. The gradient "blob" in the top-right corner is a LinearGradient shaped
-//    into a large circle (via borderRadius = half its width/height) and
-//    pushed partly off-screen with negative top/right positioning. That's
-//    the standard trick for faking a soft radial glow with a tool that
-//    only draws linear gradients.
-// 2. The 8 worker photos are arranged with ABSOLUTE positioning inside one
-//    relative container — each one just gets a top/left/right offset and a
-//    size, rather than living in a grid. That's what gives the "floating
-//    scattered circles" look instead of a rigid row of avatars.
-// 3. Everything sits inside SafeAreaView + a padded View, so nothing
-//    touches the screen edges or the notch/status bar — that's the fix
-//    for the missing left/right padding you flagged.
+// Circular photo collage: one center image + 7 evenly spaced in a ring,
+// positioned with trigonometry inside a fixed 280x280 box that flexbox
+// centers on any screen width.
+//
+// Wrapped in a ScrollView as a safety net — on shorter phones (iPhone SE,
+// some Androids), collage + heading + button combined can be taller than
+// the screen. Without scroll, that overflow just gets silently clipped at
+// the top; with it, the content scrolls into view instead. On taller
+// screens this looks and behaves identically to a plain View.
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GradientButton from '../../components/GradientButton';
 
-// Rename your 8 images to these, or edit the paths below to match your
-// actual filenames in assets/images/.
 const workerImages = [
   require('../../../assets/images/workers.png'),
   require('../../../assets/images/clothing.png'),
@@ -33,45 +27,57 @@ const workerImages = [
   require('../../../assets/images/workers3.png'),
 ];
 
-// Position, size, and z-index for each floating circle. Tweak these numbers
-// freely — this is the "layout" for the whole collage in one place.
-const layout = [
-  { top: 10, left: 20, size: 64 },
-  { top: 0, left: 130, size: 52 },
-  { top: 55, left: 210, size: 72 },
-  { top: 130, left: 250, size: 56 },
-  { top: 150, left: 40, size: 60 },
-  { top: 90, left: 90, size: 44 },
-  { top: 190, left: 150, size: 50 },
-  { top: 20, left: 260, size: 40 },
-];
+const ORBIT_SIZE = 300;
+const ORBIT_RADIUS = 125;
+const CENTER_SIZE = 76;
+const RING_SIZE = 54;
+
+function buildLayout() {
+  const center = ORBIT_SIZE / 2;
+  const positions: { top: number; left: number; size: number }[] = [];
+
+  positions.push({
+    top: center - CENTER_SIZE / 2,
+    left: center - CENTER_SIZE / 2,
+    size: CENTER_SIZE,
+  });
+
+  const ringCount = workerImages.length - 1;
+  for (let i = 0; i < ringCount; i++) {
+    const angle = (360 / ringCount) * i * (Math.PI / 180);
+    const x = ORBIT_RADIUS * Math.cos(angle);
+    const y = ORBIT_RADIUS * Math.sin(angle);
+    positions.push({
+      top: center + y - RING_SIZE / 2,
+      left: center + x - RING_SIZE / 2,
+      size: RING_SIZE,
+    });
+  }
+
+  return positions;
+}
+
+const layout = buildLayout();
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
-      {/* Decorative gradient blob — absolutely positioned, sits BEHIND
-          everything else (it's the first child, and other content is
-          rendered on top of it naturally in React Native's stacking order) */}
       <LinearGradient
-        colors={['#DBEAFE', '#F8FAFC']} // light blue fading to the page background
+        colors={['#DBEAFE', '#F8FAFC']}
         start={{ x: 0.2, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={{
-          position: 'absolute',
-          top: -80,
-          right: -80,
-          width: 260,
-          height: 260,
-          borderRadius: 130, // half of width/height = perfect circle
-        }}
+        style={{ position: 'absolute', top: -80, right: -80, width: 260, height: 260, borderRadius: 130 }}
       />
 
-      <View className="flex-1 justify-between px-6">
-        {/* Floating image collage */}
-        <View className="mt-10" style={{ height: 260 }}>
-          <View style={{ height: 240 }} className="relative">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}
+        className="px-6"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="w-full mt-10 items-center justify-center">
+          <View style={{ width: ORBIT_SIZE, height: ORBIT_SIZE }} className="relative">
             {workerImages.map((img, i) => {
               const pos = layout[i];
               return (
@@ -93,17 +99,15 @@ export default function WelcomeScreen() {
           </View>
         </View>
 
-        {/* Heading + subtext */}
-        <View className="mt-4">
+        <View className="mt-10">
           <Text className="text-4xl font-extrabold text-slate-900 leading-tight">
             Find{'\n'}the right person{'\n'}for the job.
           </Text>
-          <Text className="text-base text-slate-500 mt-4 leading-relaxed">
+          <Text className="text-base text-neutral-800 mt-4 leading-relaxed ">
             Connect with trusted local professionals near you.
           </Text>
         </View>
 
-        {/* Bottom actions */}
         <View className="mb-8 mt-10">
           <GradientButton label="Get Started" onPress={() => router.push('/(auth)/sign-in-options')} />
           <Pressable onPress={() => router.push('/(auth)/sign-in-options')} className="mt-4">
@@ -112,7 +116,7 @@ export default function WelcomeScreen() {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

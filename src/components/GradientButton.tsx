@@ -4,8 +4,8 @@
 // the gradient + press logic six times, we build it once here and import
 // it everywhere. This is the "don't repeat yourself" principle in practice.
 
-import { Text, Pressable, ActivityIndicator, PressableProps } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { ActivityIndicator, Pressable, PressableProps, Text } from 'react-native';
 
 type Props = PressableProps & {
   label: string;
@@ -15,7 +15,7 @@ type Props = PressableProps & {
 
 export default function GradientButton({ label, loading, disabled, ...pressableProps }: Props) {
   return (
-    <Pressable {...pressableProps} disabled={disabled || loading} className="w-full">
+    <Pressable {...pressableProps} disabled={disabled || loading} className="w-full rounded-xl overflow-hidden">
       {/* LinearGradient can't take a className for its colors — gradients
           are drawn on the GPU, not via stylesheet properties, so the color
           stops are passed as a plain prop. Everything else (padding,

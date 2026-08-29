@@ -5,7 +5,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import GradientButton from '../../components/GradientButton';
 import { supabase } from '../../lib/supabase';
@@ -29,6 +29,11 @@ export default function PhoneInputScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white px-6">
+      <ScrollView 
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-between' }}
+                    className="px-6 py-4"
+                    showsVerticalScrollIndicator={false}
+                  >
       <Pressable onPress={() => router.back()} className="w-10 h-10 justify-center">
         <Ionicons name="arrow-back" size={22} color="#111" />
       </Pressable>
@@ -52,6 +57,7 @@ export default function PhoneInputScreen() {
       </View>
 
       <GradientButton label="Send Code" onPress={sendCode} loading={loading} disabled={!phone} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
